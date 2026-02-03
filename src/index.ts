@@ -2,6 +2,7 @@ import { createServer } from "http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
+import { analyzeGardenOrder } from "./tools/analyzeGardenOrder.js";
 
 const server = new McpServer({
   name: "demo-mcp-server",
@@ -28,6 +29,30 @@ server.registerTool(
     };
   }
 );
+
+server.registerTool(
+  "analyze_garden_order",
+  {
+    description:
+      "Analyze a Garden Finance order to check deadline vs initiate timing",
+    inputSchema: {
+      order_id: z.string(),
+    },
+  },
+  async ({ order_id }) => {
+    const result = await analyzeGardenOrder({ order_id });
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+);
+
 
 const transport = new StreamableHTTPServerTransport();
 
