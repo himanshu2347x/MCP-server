@@ -50,3 +50,12 @@ export type OrderV1Response = {
     };
   };
 };
+
+export type CheckResult =
+  | { matched: false }
+  | {
+      matched: true;
+      reason_code: string;
+      summary: string;
+      evidence: Record<string, any>;
+    };

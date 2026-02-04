@@ -3,7 +3,7 @@ import { fetchCurrentPrices } from "../../utils/priceFluctuation/fetchCurrentPri
 import { validatePriceThreshold } from "../../utils/priceFluctuation/validatePriceThreshold.js";
 
 export async function priceFluctuationCheck(order_id: string) {
-  /* 1. Fetch order (v2) */
+
   const res = await fetch(
     `https://api.garden.finance/v2/orders/${order_id}`
   );
@@ -32,14 +32,13 @@ export async function priceFluctuationCheck(order_id: string) {
     return { matched: false };
   }
 
-  /* 2. Fetch current fiat prices */
+
   const [currentInputPrice, currentOutputPrice] =
     await fetchCurrentPrices(
       sourceSwap.asset,
       destinationSwap.asset
     );
 
-  /* 3. Skip likewise assets (±0.5%) */
   const priceRatio =
     currentInputPrice / currentOutputPrice;
 
@@ -47,7 +46,6 @@ export async function priceFluctuationCheck(order_id: string) {
     return { matched: false };
   }
 
-  /* 4. Validate threshold */
   const PRICE_DROP_THRESHOLD = 0.05; // 5%
 
   const withinThreshold =

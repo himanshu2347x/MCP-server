@@ -1,3 +1,4 @@
+import { amountMismatchCheck } from "./checks/amountMismatch.check.js";
 import { deadlineCheck } from "./checks/deadline.check.js";
 import { liquidityCheck } from "./checks/liquidity.check.js";
 import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
@@ -33,6 +34,19 @@ if (result.matched) {
     evidence: result.evidence,
   };
   } 
+
+
+   const amountResult = await amountMismatchCheck(order_id);
+
+  if (amountResult.matched) {
+    return {
+      status: "diagnosed",
+      order_id,
+      reason_code: amountResult.reason_code,
+      summary: amountResult.summary,
+      evidence: amountResult.evidence,
+    };
+  }
   
    const priceResult = await priceFluctuationCheck(order_id);
 
