@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 export async function deadlineCheck(order_id: string) {
-  // 1. Fetch Garden v1 order
+
   const res = await fetch(
     `https://api.garden.finance/orders/id/${order_id}`
   );

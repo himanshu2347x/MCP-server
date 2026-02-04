@@ -22,3 +22,31 @@ export type LiquidityResponse = {
     }>;
   }>;
 };
+export type GardenOrder = {
+  create_order: {
+    source_chain: string;
+    destination_chain: string;
+    additional_data: {
+      input_token_price: number;
+      output_token_price: number;
+    };
+  };
+};
+
+export type OrderV1Response = {
+  status: string;
+  result: {
+    source_swap: {
+      chain: string;
+    };
+    destination_swap: {
+      chain: string;
+    };
+    create_order: {
+      additional_data?: {
+        input_token_price: number;
+        output_token_price: number;
+      };
+    };
+  };
+};
