@@ -1,5 +1,6 @@
 import { deadlineCheck } from "./checks/deadline.check.js";
 import { liquidityCheck } from "./checks/liquidity.check.js";
+import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
 
 
 
@@ -31,7 +32,19 @@ if (result.matched) {
     summary: result.summary,
     evidence: result.evidence,
   };
-} 
+  } 
+  
+   const priceResult = await priceFluctuationCheck(order_id);
+
+  if (priceResult.matched) {
+    return {
+      status: "diagnosed",
+      order_id,
+      reason_code: priceResult.reason_code,
+      summary: priceResult.summary,
+      evidence: priceResult.evidence,
+    };
+  }
 
   // 2. Fallback (no checks matched)
   return {
