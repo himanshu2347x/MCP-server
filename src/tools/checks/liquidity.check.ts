@@ -3,7 +3,7 @@ import { LiquidityResponse, OrderV2Response } from "../../types/types.js";
 
 
 export async function liquidityCheck(order_id: string) {
-  /* 1. Fetch order (v2) */
+
   const orderRes = await fetch(
     `https://api.garden.finance/v2/orders/${order_id}`
   );
@@ -27,7 +27,6 @@ export async function liquidityCheck(order_id: string) {
   const destinationAsset = destinationSwap.asset;
   const destinationAmount = BigInt(destinationSwap.amount);
 
-  /* 2. Fetch liquidity */
   const liquidityRes = await fetch(
     "https://api.garden.finance/v2/liquidity"
   );
@@ -39,7 +38,6 @@ export async function liquidityCheck(order_id: string) {
   const liquidityJson =
     (await liquidityRes.json()) as LiquidityResponse;
 
-  /* 3. Find solver liquidity */
   const solverLiquidity = liquidityJson.result.find(
     (s) =>
      s.solver_id?.toLowerCase() === solverId?.toLowerCase() 
@@ -58,7 +56,6 @@ export async function liquidityCheck(order_id: string) {
     };
   }
 
-  /* 4. Find asset liquidity */
   const assetLiquidity = solverLiquidity.liquidity.find(
     (l) => l.asset === destinationAsset
   );
@@ -78,7 +75,6 @@ export async function liquidityCheck(order_id: string) {
 
   const availableBalance = BigInt(assetLiquidity.balance);
 
-  /* 5. Compare */
   if (availableBalance < destinationAmount) {
     return {
       matched: true,
