@@ -34,24 +34,43 @@ server.registerTool(
   "analyze_garden_order",
   {
     description:
-      "Analyze a Garden Finance order to check deadline vs initiate timing",
+      "Analyze a Garden Finance order and diagnose the primary reason for delay or failure using protocol-level checks",
     inputSchema: {
       order_id: z.string(),
     },
   },
   async ({ order_id }) => {
-    const result = await analyzeGardenOrder({ order_id });
+    try {
+      const result = await analyzeGardenOrder({ order_id });
 
-    return {
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(result, null, 2),
-        },
-      ],
-    };
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    } catch (err: any) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                status: "error",
+                message: err.message ?? "Analysis failed",
+              },
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
   }
 );
+
 
 
 const transport = new StreamableHTTPServerTransport();

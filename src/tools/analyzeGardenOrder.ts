@@ -1,81 +1,44 @@
-// src/tools/analyzeGardenOrder.ts
-import fetch from "node-fetch";
+import { deadlineCheck } from "./checks/deadline.check.js";
+import { liquidityCheck } from "./checks/liquidity.check.js";
+
+
 
 export async function analyzeGardenOrder({
   order_id,
 }: {
   order_id: string;
 }) {
-  const res = await fetch(
-    `https://api.garden.finance/orders/id/${order_id}`
-  );
+  // 1. Run deadline check
+  const deadlineResult = await deadlineCheck(order_id);
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch Garden v1 order");
+  if (deadlineResult.matched) {
+    return {
+      status: "diagnosed",
+      order_id,
+      reason_code: deadlineResult.reason_code,
+      summary: deadlineResult.summary,
+      evidence: deadlineResult.evidence,
+    };
   }
 
-  const data = await res.json() as {
-    result: {
-      create_order: {
-        created_at: string;
-        additional_data?: { deadline?: number };
-      };
-      source_swap: {
-        initiate_timestamp?: string;
-        required_confirmations: number;
-        current_confirmations: number;
-      };
-    };
-  };
-  const result = data.result;
+const result = await liquidityCheck(order_id);
 
-  const createOrder = result.create_order;
-  const sourceSwap = result.source_swap;
-
-  // timestamps
-  const createdAt = new Date(createOrder.created_at);
-
-  const deadlineUnix =
-    createOrder.additional_data?.deadline;
-
-  const deadline = deadlineUnix
-    ? new Date(deadlineUnix * 1000)
-    : null;
-
-  const initiateTimestamp = sourceSwap.initiate_timestamp
-    ? new Date(sourceSwap.initiate_timestamp)
-    : null;
-
-  // calculations
- let missedDeadline = false;
-let delayMinutes: number | null = null;
-let reason: string;
-
-if (!initiateTimestamp) {
-  missedDeadline = true;
-  reason = "User never initiated before deadline";
-} else if (deadline && initiateTimestamp > deadline) {
-  missedDeadline = true;
-  delayMinutes = Math.round(
-    (initiateTimestamp.getTime() - deadline.getTime()) / 60000
-  );
-  reason = "Initiated after deadline";
-} else {
-  reason = "Initiated within deadline";
-}
-
-
-  // FACTS ONLY
+if (result.matched) {
   return {
+    status: "diagnosed",
     order_id,
-    created_at: createdAt.toISOString(),
-    deadline: deadline ? deadline.toISOString() : null,
-    initiate_timestamp: initiateTimestamp
-      ? initiateTimestamp.toISOString()
-      : null,
-    missed_deadline: missedDeadline,
-    delay_minutes: delayMinutes,
-    required_confirmations: sourceSwap.required_confirmations,
-    current_confirmations: sourceSwap.current_confirmations,
+    reason_code: result.reason_code,
+    summary: result.summary,
+    evidence: result.evidence,
+  };
+} 
+
+  // 2. Fallback (no checks matched)
+  return {
+    status: "undetermined",
+    order_id,
+    summary:
+      "No known automated failure pattern matched for this order",
+    action: "human_intervention_required",
   };
 }
