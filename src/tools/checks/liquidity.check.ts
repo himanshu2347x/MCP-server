@@ -42,7 +42,7 @@ export async function liquidityCheck(order_id: string) {
   /* 3. Find solver liquidity */
   const solverLiquidity = liquidityJson.result.find(
     (s) =>
-      s.solver_id.toLowerCase() === solverId.toLowerCase()
+     s.solver_id?.toLowerCase() === solverId?.toLowerCase() 
   );
 
   if (!solverLiquidity) {
