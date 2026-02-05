@@ -5,19 +5,30 @@ export type OrderV2Response = {
 };
 
 export type GardenOrderV2 = {
+  created_at: string;
   solver_id: string;
   source_swap: {
     asset: string;
     amount: string;
     filled_amount: string;
+    initiate_tx_hash?: string;
     redeem_tx_hash?: string;
+    refund_tx_hash?: string;
+    initiate_timestamp?: string;
+    redeem_timestamp?: string;
+    refund_timestamp?: string | null;
     asset_price?: number;
   } | null;
   destination_swap: {
     asset: string;
     amount: string;
     filled_amount: string;
+    initiate_tx_hash?: string;
     redeem_tx_hash?: string;
+    refund_tx_hash?: string;
+    initiate_timestamp?: string;
+    redeem_timestamp?: string;
+    refund_timestamp?: string | null;
     asset_price?: number;
   } | null;
 };
@@ -83,5 +94,22 @@ export type CheckResult =
       matched: true;
       reason_code: string;
       summary: string;
-      evidence: Record<string, any>;
+      evidence?: Record<string, any>;
     };
+
+export type OrderStatus = 
+  | "completed_success" 
+  | "completed_with_delay" 
+  | "pending" 
+  | "failed" 
+  | "not_started";
+
+export type DiagnosisResult = {
+  status: OrderStatus | "undetermined";
+  order_id: string;
+  reason_code?: string;
+  summary: string;
+  evidence?: Record<string, any>;
+  completion_time?: string;
+  action?: string;
+};
