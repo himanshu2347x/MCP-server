@@ -33,7 +33,6 @@ export async function analyzeGardenOrder({
     throw new Error("Failed to fetch fiat prices");
   }
 
-  // Parse all responses
   const [orderV2Json, orderV1Json, liquidityJson, fiatJson] = await Promise.all([
     orderV2Res.json() as Promise<OrderV2Response>,
     orderV1Res.json() as Promise<OrderV1Response>,
@@ -45,7 +44,6 @@ export async function analyzeGardenOrder({
   const orderV1Data = orderV1Json.result;
   const liquidityData = liquidityJson;
   const fiatPrices = fiatJson.result;
-
 
 
   const CHECKS = [
@@ -66,7 +64,6 @@ export async function analyzeGardenOrder({
     run: () => priceFluctuationCheck(order, fiatPrices),
   },
 ];
-
 
 for (const check of CHECKS) {
   const result = await check.run();
