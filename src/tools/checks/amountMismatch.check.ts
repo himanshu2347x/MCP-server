@@ -1,22 +1,8 @@
-import fetch from "node-fetch";
-import { CheckResult } from "../../types/types.js";
-
-
+import { CheckResult, GardenOrderV2 } from "../../types/types.js";
 
 export async function amountMismatchCheck(
-  order_id: string
+  order: GardenOrderV2
 ): Promise<CheckResult> {
-  const res = await fetch(
-    `https://api.garden.finance/v2/orders/${order_id}`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch Garden v2 order");
-  }
-
-  const json = (await res.json()) as any;
-  const order = json.result;
-
   const source = order.source_swap;
   const destination = order.destination_swap;
 

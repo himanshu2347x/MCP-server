@@ -1,13 +1,25 @@
 
 export type OrderV2Response = {
   status: string;
-  result: {
-    solver_id: string;
-    destination_swap: {
-      asset: string;
-      amount: string;
-    } | null;
-  };
+  result: GardenOrderV2;
+};
+
+export type GardenOrderV2 = {
+  solver_id: string;
+  source_swap: {
+    asset: string;
+    amount: string;
+    filled_amount: string;
+    redeem_tx_hash?: string;
+    asset_price?: number;
+  } | null;
+  destination_swap: {
+    asset: string;
+    amount: string;
+    filled_amount: string;
+    redeem_tx_hash?: string;
+    asset_price?: number;
+  } | null;
 };
 
 export type LiquidityResponse = {

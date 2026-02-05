@@ -1,21 +1,8 @@
 import fetch from "node-fetch";
-import { LiquidityResponse, OrderV2Response } from "../../types/types.js";
+import { GardenOrderV2, LiquidityResponse } from "../../types/types.js";
 
 
-export async function liquidityCheck(order_id: string) {
-
-  const orderRes = await fetch(
-    `https://api.garden.finance/v2/orders/${order_id}`
-  );
-
-  if (!orderRes.ok) {
-    throw new Error("Failed to fetch Garden v2 order");
-  }
-
-  const orderJson =
-    (await orderRes.json()) as OrderV2Response;
-
-  const order = orderJson.result;
+export async function liquidityCheck(order: GardenOrderV2) {
 
   const destinationSwap = order.destination_swap;
   const solverId = order.solver_id;

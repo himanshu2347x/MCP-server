@@ -1,8 +1,8 @@
+import fetch from "node-fetch";
 import { amountMismatchCheck } from "./checks/amountMismatch.check.js";
 import { deadlineCheck } from "./checks/deadline.check.js";
 import { liquidityCheck } from "./checks/liquidity.check.js";
 import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
-
 
 
 export async function analyzeGardenOrder({
@@ -10,6 +10,18 @@ export async function analyzeGardenOrder({
 }: {
   order_id: string;
 }) {
+  // Fetch order data once
+  const orderRes = await fetch(
+    `https://api.garden.finance/v2/orders/${order_id}`
+  );
+
+  if (!orderRes.ok) {
+    throw new Error("Failed to fetch Garden v2 order");
+  }
+
+  const orderJson = (await orderRes.json()) as any;
+  const order = orderJson.result;
+
   // 1. Run deadline check
   const deadlineResult = await deadlineCheck(order_id);
 
@@ -23,7 +35,7 @@ export async function analyzeGardenOrder({
     };
   }
 
-const result = await liquidityCheck(order_id);
+const result = await liquidityCheck(order);
 
 if (result.matched) {
   return {
@@ -36,7 +48,7 @@ if (result.matched) {
   } 
 
 
-   const amountResult = await amountMismatchCheck(order_id);
+   const amountResult = await amountMismatchCheck(order);
 
   if (amountResult.matched) {
     return {
@@ -48,7 +60,7 @@ if (result.matched) {
     };
   }
   
-   const priceResult = await priceFluctuationCheck(order_id);
+   const priceResult = await priceFluctuationCheck(order);
 
   if (priceResult.matched) {
     return {

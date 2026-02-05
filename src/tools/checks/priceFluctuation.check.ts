@@ -1,19 +1,8 @@
-import fetch from "node-fetch";
+import { GardenOrderV2 } from "../../types/types.js";
 import { fetchCurrentPrices } from "../../utils/priceFluctuation/fetchCurrentPrices.js";
 import { validatePriceThreshold } from "../../utils/priceFluctuation/validatePriceThreshold.js";
 
-export async function priceFluctuationCheck(order_id: string) {
-
-  const res = await fetch(
-    `https://api.garden.finance/v2/orders/${order_id}`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch Garden v2 order");
-  }
-
-  const orderJson = (await res.json()) as any;
-  const order = orderJson.result;
+export async function priceFluctuationCheck(order: GardenOrderV2) {
 
   const sourceSwap = order.source_swap;
   const destinationSwap = order.destination_swap;
