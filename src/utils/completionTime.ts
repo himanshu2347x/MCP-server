@@ -21,3 +21,27 @@ export function calculateCompletionTime(order: OrderV2Response["result"]): strin
     return undefined;
   }
 }
+
+export function formatTimeline(order: OrderV2Response["result"]): string {
+  const createdAt = order.created_at;
+  const sourceInitiate = order.source_swap?.initiate_timestamp;
+  const destInitiate = order.destination_swap?.initiate_timestamp;
+
+  if (!createdAt || !sourceInitiate || !destInitiate) return "";
+
+  try {
+    const created = new Date(createdAt);
+    const sourceInit = new Date(sourceInitiate);
+    const destInit = new Date(destInitiate);
+
+    const sourceDelay = Math.floor((sourceInit.getTime() - created.getTime()) / 1000);
+    const destDelay = Math.floor((destInit.getTime() - created.getTime()) / 1000);
+
+    return `\n\nTimeline:\n` +
+           `- Created: ${created.toLocaleString('en-US')}\n` +
+           `- Source Initiated: +${sourceDelay}s\n` +
+           `- Destination Initiated: +${destDelay}s`;
+  } catch {
+    return "";
+  }
+}

@@ -98,11 +98,11 @@ export type CheckResult =
     };
 
 export type OrderStatus = 
-  | "completed_success" 
-  | "completed_with_delay" 
-  | "pending" 
-  | "failed" 
-  | "not_started";
+  | "completed"  
+  | "in_progress" 
+  | "expired" 
+  | "not_initiated"
+  | "refunded";
 
 export type DiagnosisResult = {
   status: OrderStatus | "undetermined";
