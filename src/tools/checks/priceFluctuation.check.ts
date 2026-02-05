@@ -1,10 +1,16 @@
-import { GardenOrderV2 } from "../../types/types.js";
+import fetch from "node-fetch";
+import { FiatPricesResponse, GardenOrderV2 } from "../../types/types.js";
 import { validatePriceThreshold } from "../../utils/priceFluctuation/validatePriceThreshold.js";
 
 export async function priceFluctuationCheck(
-  order: GardenOrderV2,
-  fiatPrices: Record<string, number>
+  order: GardenOrderV2
 ) {
+  const fiatRes = await fetch("https://api.garden.finance/v2/fiat");
+  if (!fiatRes.ok) {
+    throw new Error("Failed to fetch fiat prices");
+  }
+  const fiatJson = await fiatRes.json() as FiatPricesResponse;
+  const fiatPrices = fiatJson.result;
 
   const sourceSwap = order.source_swap;
   const destinationSwap = order.destination_swap;

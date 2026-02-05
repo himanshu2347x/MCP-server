@@ -1,10 +1,15 @@
+import fetch from "node-fetch";
 import { GardenOrderV2, LiquidityResponse } from "../../types/types.js";
 
 
 export async function liquidityCheck(
-  order: GardenOrderV2,
-  liquidityData: LiquidityResponse
+  order: GardenOrderV2
 ) {
+  const liquidityRes = await fetch("https://api.garden.finance/v2/liquidity");
+  if (!liquidityRes.ok) {
+    throw new Error("Failed to fetch Garden liquidity");
+  }
+  const liquidityData = await liquidityRes.json() as LiquidityResponse;
 
   const destinationSwap = order.destination_swap;
   const solverId = order.solver_id;

@@ -1,8 +1,14 @@
-import { GardenOrderV1 } from "../../types/types.js";
+import fetch from "node-fetch";
+import { OrderV1Response } from "../../types/types.js";
 
-export async function deadlineCheck(orderV1: GardenOrderV1) {
-
-  const result = orderV1;
+export async function deadlineCheck(order_id: string) {
+  // Fetch v1 order data
+  const orderV1Res = await fetch(`https://api.garden.finance/orders/id/${order_id}`);
+  if (!orderV1Res.ok) {
+    throw new Error("Failed to fetch Garden v1 order");
+  }
+  const orderV1Json = await orderV1Res.json() as OrderV1Response;
+  const result = orderV1Json.result;
 
   // 2. Normalize timestamps
   const createdAt = new Date(result.create_order.created_at);
@@ -18,7 +24,7 @@ export async function deadlineCheck(orderV1: GardenOrderV1) {
     ? new Date(result.source_swap.initiate_timestamp)
     : null;
 
-  // 3. Deadline logic
+
   if (!deadline) {
     return { matched: false };
   }
