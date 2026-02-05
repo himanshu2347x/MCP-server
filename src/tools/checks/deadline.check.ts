@@ -1,30 +1,8 @@
-import fetch from "node-fetch";
+import { GardenOrderV1 } from "../../types/types.js";
 
-export async function deadlineCheck(order_id: string) {
+export async function deadlineCheck(orderV1: GardenOrderV1) {
 
-  const res = await fetch(
-    `https://api.garden.finance/orders/id/${order_id}`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch Garden v1 order");
-  }
-
-  const data = (await res.json()) as {
-    result: {
-      create_order: {
-        created_at: string;
-        additional_data?: { deadline?: number };
-      };
-      source_swap: {
-        initiate_timestamp?: string;
-        required_confirmations: number;
-        current_confirmations: number;
-      };
-    };
-  };
-
-  const result = data.result;
+  const result = orderV1;
 
   // 2. Normalize timestamps
   const createdAt = new Date(result.create_order.created_at);

@@ -1,8 +1,10 @@
 import { GardenOrderV2 } from "../../types/types.js";
-import { fetchCurrentPrices } from "../../utils/priceFluctuation/fetchCurrentPrices.js";
 import { validatePriceThreshold } from "../../utils/priceFluctuation/validatePriceThreshold.js";
 
-export async function priceFluctuationCheck(order: GardenOrderV2) {
+export async function priceFluctuationCheck(
+  order: GardenOrderV2,
+  fiatPrices: Record<string, number>
+) {
 
   const sourceSwap = order.source_swap;
   const destinationSwap = order.destination_swap;
@@ -22,11 +24,17 @@ export async function priceFluctuationCheck(order: GardenOrderV2) {
   }
 
 
-  const [currentInputPrice, currentOutputPrice] =
-    await fetchCurrentPrices(
-      sourceSwap.asset,
-      destinationSwap.asset
-    );
+  const currentInputPrice = fiatPrices[sourceSwap.asset];
+  const currentOutputPrice = fiatPrices[destinationSwap.asset];
+
+  if (
+    typeof currentInputPrice !== "number" ||
+    typeof currentOutputPrice !== "number" ||
+    currentInputPrice <= 0 ||
+    currentOutputPrice <= 0
+  ) {
+    return { matched: false };
+  }
 
   const priceRatio =
     currentInputPrice / currentOutputPrice;

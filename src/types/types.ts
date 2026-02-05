@@ -47,20 +47,34 @@ export type GardenOrder = {
 
 export type OrderV1Response = {
   status: string;
-  result: {
-    source_swap: {
-      chain: string;
+  result: GardenOrderV1;
+};
+
+export type GardenOrderV1 = {
+  create_order: {
+    created_at: string;
+    additional_data?: { 
+      deadline?: number;
+      input_token_price?: number;
+      output_token_price?: number;
     };
-    destination_swap: {
-      chain: string;
-    };
-    create_order: {
-      additional_data?: {
-        input_token_price: number;
-        output_token_price: number;
-      };
-    };
+    source_chain: string;
+    destination_chain: string;
   };
+  source_swap: {
+    chain: string;
+    initiate_timestamp?: string;
+    required_confirmations: number;
+    current_confirmations: number;
+  };
+  destination_swap: {
+    chain: string;
+  };
+};
+
+export type FiatPricesResponse = {
+  status: string;
+  result: Record<string, number>;
 };
 
 export type CheckResult =
