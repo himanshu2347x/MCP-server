@@ -10,12 +10,13 @@ export async function amountMismatchCheck(
     return { matched: false };
   }
 
-
   const sourceAmount = BigInt(source.amount);
   const sourceFilled = BigInt(source.filled_amount);
-
   const destAmount = BigInt(destination.amount);
   const destFilled = BigInt(destination.filled_amount);
+
+  const sourceInitiated = Boolean(source.initiate_tx_hash);
+  const destInitiated = Boolean(destination.initiate_tx_hash);
 
   const sourceRedeemed = Boolean(source.redeem_tx_hash);
   const destRedeemed = Boolean(destination.redeem_tx_hash);
@@ -39,22 +40,25 @@ export async function amountMismatchCheck(
     };
   }
 
+ 
   if (
-    (sourceFilled < sourceAmount && !sourceRedeemed) ||
-    (destFilled < destAmount && !destRedeemed)
+    (sourceInitiated && sourceFilled < sourceAmount && !sourceRedeemed) ||
+    (destInitiated && destFilled < destAmount && !destRedeemed)
   ) {
     return {
       matched: true,
-      reason_code: "partial_fill_unredeemed",
+      reason_code: "partial_fill_after_initiation",
       summary:
-        "Swap was only partially filled and never redeemed, likely due to liquidity or execution issues",
+        "Swap was initiated but only partially filled and never redeemed, indicating execution failure after initiation",
       evidence: {
         source: {
+          initiated: sourceInitiated,
           requested: sourceAmount.toString(),
           filled: sourceFilled.toString(),
           redeemed: sourceRedeemed,
         },
         destination: {
+          initiated: destInitiated,
           requested: destAmount.toString(),
           filled: destFilled.toString(),
           redeemed: destRedeemed,
@@ -62,7 +66,6 @@ export async function amountMismatchCheck(
       },
     };
   }
-
 
   return { matched: false };
 }
