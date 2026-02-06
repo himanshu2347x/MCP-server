@@ -2,10 +2,12 @@ import fetch from "node-fetch";
 import { FiatPricesResponse, GardenOrderV2 } from "../../types/types.js";
 import { validatePriceThreshold } from "../../utils/priceFluctuation/validatePriceThreshold.js";
 
+const API_BASE_URL = process.env.GARDEN_API_BASE_URL;
+
 export async function priceFluctuationCheck(
   order: GardenOrderV2
 ) {
-  const fiatRes = await fetch("https://api.garden.finance/v2/fiat");
+  const fiatRes = await fetch(`${API_BASE_URL}/v2/fiat`);
   if (!fiatRes.ok) {
     throw new Error("Failed to fetch fiat prices");
   }

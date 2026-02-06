@@ -1,10 +1,12 @@
 import fetch from "node-fetch";
 
+const API_BASE_URL = process.env.GARDEN_API_BASE_URL;
+
 export async function fetchCurrentPrices(
   sourceAsset: string,
   destinationAsset: string
 ): Promise<[number, number]> {
-  const res = await fetch("https://api.garden.finance/v2/fiat");
+  const res = await fetch(`${API_BASE_URL}/v2/fiat`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch fiat prices");

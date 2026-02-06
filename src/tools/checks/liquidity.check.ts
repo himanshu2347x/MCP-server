@@ -1,11 +1,12 @@
 import fetch from "node-fetch";
 import { GardenOrderV2, LiquidityResponse } from "../../types/types.js";
 
+const API_BASE_URL = process.env.GARDEN_API_BASE_URL || "https://api.garden.finance";
 
 export async function liquidityCheck(
   order: GardenOrderV2
 ) {
-  const liquidityRes = await fetch("https://api.garden.finance/v2/liquidity");
+  const liquidityRes = await fetch(`${API_BASE_URL}/v2/liquidity`);
   if (!liquidityRes.ok) {
     throw new Error("Failed to fetch Garden liquidity");
   }

@@ -7,6 +7,8 @@ import { deadlineCheck } from "./checks/deadline.check.js";
 import { liquidityCheck } from "./checks/liquidity.check.js";
 import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
 
+const API_BASE_URL = process.env.GARDEN_API_BASE_URL;
+
 export async function analyzeGardenOrder({
   order_id,
 }: {
@@ -14,8 +16,8 @@ export async function analyzeGardenOrder({
 }): Promise<DiagnosisResult> {
 
   const [orderV2Res, orderV1Res] = await Promise.all([
-    fetch(`https://api.garden.finance/v2/orders/${order_id}`),
-    fetch(`https://api.garden.finance/orders/id/${order_id}`)
+    fetch(`${API_BASE_URL}/v2/orders/${order_id}`),
+    fetch(`${API_BASE_URL}/orders/id/${order_id}`)
   ]);
   
   if (!orderV2Res.ok) {
