@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { createServer } from "http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
