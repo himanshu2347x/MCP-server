@@ -1,8 +1,9 @@
 import fetch from "node-fetch";
-import { DiagnosisResult, OrderV1Response, OrderV2Response } from "../types/types.js";
+import { CheckResult, DiagnosisResult, OrderV1Response, OrderV2Response } from "../types/types.js";
 import { calculateCompletionTime, formatTimeline } from "../utils/completionTime.js";
 import { determineStatus } from "../utils/orderStatus.js";
 import { amountMismatchCheck } from "./checks/amountMismatch.check.js";
+import { blacklistedCheck } from "./checks/blacklisted.check.js";
 import { deadlineCheck } from "./checks/deadline.check.js";
 import { liquidityCheck } from "./checks/liquidity.check.js";
 import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
@@ -44,78 +45,7 @@ export async function analyzeGardenOrder({
     };
   }
 
-  // IN PROGRESS:
-  if (status === "in_progress") {
-    return {
-      status: "in_progress",
-      order_id,
-      summary: "Order is in progress and awaiting redeem",
-    };
-  }
-
-  // EXPIRED OR REFUNDED: 
-  if (status === "expired" || status === "refunded") {
-    // Check 1: Deadline
-    const deadlineResult = await deadlineCheck(orderV1);
-    if (deadlineResult.matched && deadlineResult.summary) {
-      return {
-        status,
-        order_id,
-        reason_code: deadlineResult.reason_code,
-        summary: deadlineResult.summary,
-        evidence: deadlineResult.evidence,
-      };
-    }
-
-    // Check 2: Amount mismatch
-    const amountResult = await amountMismatchCheck(order);
-    if (amountResult.matched && amountResult.summary) {
-      return {
-        status,
-        order_id,
-        reason_code: amountResult.reason_code,
-        summary: amountResult.summary,
-        evidence: amountResult.evidence,
-      };
-    }
-
-    // Check 3: Liquidity
-    const liquidityResult = await liquidityCheck(order);
-    if (liquidityResult.matched && liquidityResult.summary) {
-      return {
-        status,
-        order_id,
-        reason_code: liquidityResult.reason_code,
-        summary: liquidityResult.summary,
-        evidence: liquidityResult.evidence,
-      };
-    }
-
-    // Check 4: Price fluctuation
-    const priceResult = await priceFluctuationCheck(order);
-    if (priceResult.matched && priceResult.summary) {
-      return {
-        status,
-        order_id,
-        reason_code: priceResult.reason_code,
-        summary: priceResult.summary,
-        evidence: priceResult.evidence,
-      };
-    }
-
-    const fallbackSummary = status === "expired" 
-      ? "Order expired after deadline passed, but no specific failure pattern detected"
-      : "Order was refunded, but no specific failure pattern detected";
-
-    return {
-      status,
-      order_id,
-      summary: fallbackSummary,
-      action: "human_intervention_required",
-    };
-  }
-
-  // COMPLETED
+    // COMPLETED
   if (status === "completed") {
     const completionTime = calculateCompletionTime(order);
     const timeline = formatTimeline(order);
@@ -129,6 +59,45 @@ export async function analyzeGardenOrder({
       completion_time: completionTime,
     };
   }
+
+
+
+  // EXPIRED, REFUNDED OR IN_PROGRESS: 
+  if (status === "expired" || status === "refunded" || status === "in_progress") {
+    const results = await Promise.all([
+      blacklistedCheck(orderV1),
+      deadlineCheck(orderV1),
+      amountMismatchCheck(order),
+      liquidityCheck(order),
+      priceFluctuationCheck(order),
+    ]);
+
+    const matched = results.find((r) => r.matched === true) as Exclude<CheckResult, { matched: false }> | undefined;
+    if (matched && matched.matched === true) {
+      return {
+        status,
+        order_id,
+        reason_code: matched.reason_code,
+        summary: matched.summary,
+        evidence: matched.evidence,
+      };
+    }
+
+    const fallbackSummary = status === "expired" 
+      ? "Order expired after deadline passed, but no specific failure pattern detected"
+      : status === "refunded"
+        ? "Order was refunded, but no specific failure pattern detected"
+        : "Order is in progress, but no specific failure pattern detected";
+
+    return {
+      status,
+      order_id,
+      summary: fallbackSummary,
+      action: "human_intervention_required",
+    };
+  }
+
+
 
   // Fallback
   return {

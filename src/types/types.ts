@@ -68,6 +68,7 @@ export type GardenOrderV1 = {
       deadline?: number;
       input_token_price?: number;
       output_token_price?: number;
+      is_blacklisted?: boolean;
     };
     source_chain: string;
     destination_chain: string;
@@ -102,7 +103,8 @@ export type OrderStatus =
   | "in_progress" 
   | "expired" 
   | "not_initiated"
-  | "refunded";
+  | "refunded"
+  | "blacklisted";
 
 export type DiagnosisResult = {
   status: OrderStatus | "undetermined";
