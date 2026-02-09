@@ -35,7 +35,7 @@ export async function analyzeGardenOrder({
 
   const status = determineStatus(order,orderV1);
 
-  // Check if order is blacklisted FIRST (regardless of status)
+  // Check if order is blacklisted first
   const blacklistedResult = await blacklistedCheck(orderV1);
   if (blacklistedResult.matched) {
     return {
