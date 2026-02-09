@@ -35,6 +35,17 @@ export async function analyzeGardenOrder({
 
   const status = determineStatus(order,orderV1);
 
+  // Check if order is blacklisted FIRST (regardless of status)
+  const blacklistedResult = await blacklistedCheck(orderV1);
+  if (blacklistedResult.matched) {
+    return {
+      status: "blacklisted",
+      order_id,
+      reason_code: blacklistedResult.reason_code,
+      summary: blacklistedResult.summary,
+      evidence: blacklistedResult.evidence,
+    };
+  }
 
   // NOT INITIATED
   if (status === "not_initiated") {
@@ -65,7 +76,6 @@ export async function analyzeGardenOrder({
   // EXPIRED, REFUNDED OR IN_PROGRESS: 
   if (status === "expired" || status === "refunded" || status === "in_progress") {
     const results = await Promise.all([
-      blacklistedCheck(orderV1),
       deadlineCheck(orderV1),
       amountMismatchCheck(order),
       liquidityCheck(order),
@@ -73,7 +83,7 @@ export async function analyzeGardenOrder({
     ]);
 
     const matched = results.find((r) => r.matched === true) as Exclude<CheckResult, { matched: false }> | undefined;
-    if (matched && matched.matched === true) {
+    if (matched) {
       return {
         status,
         order_id,
