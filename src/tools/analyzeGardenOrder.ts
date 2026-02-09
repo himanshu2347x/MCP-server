@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { CheckResult, DiagnosisResult, OrderV1Response, OrderV2Response } from "../types/types.js";
+import { DiagnosisResult, OrderV1Response, OrderV2Response } from "../types/types.js";
 import { calculateCompletionTime, formatTimeline } from "../utils/completionTime.js";
 import { determineStatus } from "../utils/orderStatus.js";
 import { amountMismatchCheck } from "./checks/amountMismatch.check.js";
@@ -9,6 +9,16 @@ import { liquidityCheck } from "./checks/liquidity.check.js";
 import { priceFluctuationCheck } from "./checks/priceFluctuation.check.js";
 
 const API_BASE_URL = process.env.GARDEN_API_BASE_URL;
+
+// Type guard function for CheckResult
+function isMatched(result: { matched: boolean }): result is {
+  matched: true;
+  reason_code: string;
+  summary: string;
+  evidence?: Record<string, any>
+} {
+  return result.matched === true;
+}
 
 export async function analyzeGardenOrder({
   order_id,
@@ -82,7 +92,7 @@ export async function analyzeGardenOrder({
       priceFluctuationCheck(order),
     ]);
 
-    const matched = results.find((r) => r.matched === true) as Exclude<CheckResult, { matched: false }> | undefined;
+    const matched = results.find(isMatched);
     if (matched) {
       return {
         status,
